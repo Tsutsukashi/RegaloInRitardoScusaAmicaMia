@@ -77,11 +77,10 @@ footer{margin-top:1.5rem;font-size:0.85rem;opacity:0.7}
      style="position:fixed; bottom:15px; left:50%; transform:translateX(-50%); 
             width:300px; height:auto; z-index:9999;" />
 
- <img id="img-left" src="immagini/img-bottom.png" alt="Immagine sinistra"
-     style="position:fixed; left:100px; 
-            top: calc(15px + 50px); /* subito sotto la GIF alta */
-            bottom: calc(15px + 50px); /* sopra la GIF bassa */
-            margin: auto 0; /* centra nello spazio disponibile */
+<img id="img-left" src="immagini/img-bottom.png" alt="Immagine sinistra"
+     style="position:fixed; left:100px;
+            top: calc(15px + 50px + (100vh - (15px + 50px + 15px + 50px))/2);
+            transform: translateY(-50%);
             width:300px; height:auto; z-index:9999;" />
 
 
@@ -129,6 +128,7 @@ console.warn(err);
 </script>
 </body>
 </html>
+
 
 
 
