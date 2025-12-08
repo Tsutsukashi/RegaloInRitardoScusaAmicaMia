@@ -1,157 +1,108 @@
-<!--
-Template "Pagina Silenzio" (salva come index.html)
-
-
-Istruzioni rapide (leggi il file per i dettagli):
-1) Salva questo file come `index.html`.
-2) Crea un file chiamato `message.txt` (stesso livello del file index.html) con dentro la frase desiderata, per esempio:
-
-
-Oggi non ho voglia di parlare, ciao.
-
-
-3) Crea un repository GitHub e carica entrambi i file (v. istruzioni nel README sotto).
-4) Abilita GitHub Pages per il repository (se usi un repository chiamato `username.github.io`, il sito sarà disponibile su `https://username.github.io`).
-5) Scansiona il QR che punta all'URL del sito. Quando vuoi cambiare la frase, modifica `message.txt` direttamente dall'interfaccia web di GitHub (Edit -> Commit).
-
-
-NOTE:
-- Il sito è statico e pubblico: chiunque abbia l'URL (o il QR) può leggere il messaggio.
-- Lo script prova a leggere l'intestazione `Last-Modified` della risposta per mostrare la data dell'ultimo aggiornamento se il server la fornisce.
-- Per evitare la cache del browser, lo script usa `fetch(..., {cache: 'no-store'})` (può comunque esserci caching lato CDN per pochi minuti).
-
-
----
-Esempio di `message.txt` (file separato, testo puro):
-Oggi non ho voglia di parlare, ciao.
-
-
--->
-
-
 <!doctype html>
 <html lang="it">
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Shh — Messaggio</title>
+<title>Shh — Messaggi</title>
 <style>
 :root{--bg:#0f172a;--card:#0b1220;--accent:#9ca3ff}
 html,body{height:100%;margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial}
 body{display:grid;place-items:center;background:linear-gradient(180deg,#071032, #0f172a);color:#e6eef8}
-.card{width:min(92vw,720px);padding:3rem;border-radius:18px;background:rgba(255,255,255,0.03);box-shadow:0 8px 30px rgba(2,6,23,0.6);text-align:center}
-#msg{font-size:clamp(20px,6vw,48px);line-height:1.1;margin:0 0 1rem}
-#updated{font-size:0.9rem;opacity:0.8}
-footer{margin-top:1.5rem;font-size:0.85rem;opacity:0.7}
+.card{width:min(92vw,720px);padding:3rem;border-radius:18px;background:rgba(255,255,255,0.03);box-shadow:0 8px 30px rgba(2,6,23,0.6);text-align:center;position:relative}
+#carousel{overflow:hidden;}
+.slide{min-width:100%;transition:transform 0.4s ease;font-size:clamp(20px,6vw,48px);line-height:1.1;margin-bottom:1rem}
+#slides{display:flex;}
+#updated{font-size:0.9rem;opacity:0.8;margin-bottom:1rem}
+.nav-btn{cursor:pointer;background:rgba(255,255,255,0.06);border:none;padding:0.6rem 1rem;border-radius:8px;color:#e6eef8;margin:0 0.5rem;font-size:1rem}
+.nav{margin-top:1rem}
 .hint{margin-top:1rem;font-size:0.85rem;color:var(--accent)}
+footer{margin-top:1.5rem;font-size:0.85rem;opacity:0.7}
 </style>
 </head>
 <body>
 <div style="position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; border:10px solid #9ca3ff; box-sizing:border-box; border-radius:20px; z-index:9999;"></div>
 
 
-     <!-- GIF angolo in alto a destra -->
-     <img id="gif-tr" src="https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExcWVzYmp0MmhwdW9sYWM0aTd5OW04N3p4NjUzM2pleXNwbW0wMnZ3MyZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/lIvtGCnpV2WEv8iZtB/giphy.gif" alt="GIF alto destra" style="position:fixed; top:15px; right:25px; width:370px; height:500px; z-index:9999;" />
-
-
-     <!-- IMMAGINE DESTRA-->
-     <img id="img-top" src="immagini/img-top.png" alt="Immagine superiore" 
-     style="position:fixed; bottom:15px; right:25px; width:370px; height:500px; z-index:9999;" />
-     
-
-     <!-- IMMAGINE SINISTRA-->
-     <img id="img-left" src="immagini/img-bottom.png" alt="Immagine sinistra"style="position:fixed; top:15px; left:25px; width:370px; height:500px; z-index:9999;" />
-
-     <!-- GIF angolo in basso a sinistra -->
-     <img id="gif-bl" src="https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExZDV4ZTczaHA5M3U3dDVtbGE5ZDFtd2I5MjUwcHNzZHhieHYzZW1nbCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l3nFbqtuU51UIbiLK/giphy.gif" alt="GIF basso sinistra" style="position:fixed; bottom:15px; left:25px; width:370px; height:500px; z-index:9999;" />
-
-
-
-
-     
-  <main class="card" style="position:relative;">
-
-
-
-
-
-<p id="msg">Caricamento…</p>
+<main class="card">
+<div id="carousel">
+<div id="slides"></div>
+</div>
+<div class="nav">
+<button class="nav-btn" id="prevBtn">◀</button>
+<button class="nav-btn" id="nextBtn">▶</button>
+</div>
 <div id="updated"></div>
-<div class="hint">Mostra questo messaggio quando vuoi essere lasciata in pace ✌️</div>
-<footer>Se non vedi il messaggio, aggiorna la pagina o controlla che esista <code>message.txt</code>.</footer>
+<div class="hint">Scorri tra i messaggi ✌️</div>
+<footer>Modifica o aggiungi file <code>message1.txt, message2.txt...</code> su GitHub.</footer>
 </main>
 
 
 <script>
-// Cerca message.txt nello stesso livello di index.html
-fetch('message.txt', {cache: 'no-store'})
-.then(response => {
-if (!response.ok) throw new Error('message.txt non trovato');
-return Promise.all([response.text(), Promise.resolve(response.headers)]);
-})
-.then(([text, headers]) => {
-const msgEl = document.getElementById('msg');
+// Carica messaggi multipli: message1.txt, message2.txt, ... finché esistono
+async function loadMessages(){
+const slides = document.getElementById('slides');
 const updatedEl = document.getElementById('updated');
-const trimmed = text.trim();
-msgEl.textContent = trimmed || 'Oggi non ho voglia di parlare, ciao.';
+let index = 1;
+let found = true;
+const msgs = [];
 
 
-// prova a leggere Last-Modified (se presente)
+while(found){
 try{
-const lm = headers.get('last-modified');
-if (lm) {
-const d = new Date(lm);
-if (!isNaN(d)) updatedEl.textContent = 'Aggiornato: ' + d.toLocaleString();
+const res = await fetch(`message${index}.txt`, {cache:'no-store'});
+if(!res.ok){ found = false; break; }
+const text = (await res.text()).trim();
+const lm = res.headers.get('last-modified');
+msgs.push({text, lm});
+index++;
+}catch(e){ found = false; }
 }
-}catch(e){ /* ignoriamo se non disponibile */ }
-})
-.catch(err => {
-document.getElementById('msg').textContent = 'Oggi non ho voglia di parlare, ciao.';
-console.warn(err);
+
+
+if(msgs.length === 0){
+slides.innerHTML = '<div class="slide">Nessun messaggio trovato</div>';
+return;
+}
+
+
+msgs.forEach(m => {
+const div = document.createElement('div');
+div.className = 'slide';
+div.textContent = m.text;
+slides.appendChild(div);
 });
+
+
+const last = msgs[msgs.length-1];
+if(last.lm){
+const d = new Date(last.lm);
+if(!isNaN(d)) updatedEl.textContent = 'Ultimo aggiornamento: ' + d.toLocaleString();
+}
+
+
+return msgs.length;
+}
+
+
+let current = 0;
+function updateCarousel(){
+const slides = document.getElementById('slides');
+slides.style.transform = `translateX(${-current*100}%)`;
+}
+
+
+document.getElementById('prevBtn').onclick = () => {
+current = Math.max(0, current-1);
+updateCarousel();
+};
+document.getElementById('nextBtn').onclick = () => {
+current = Math.min(totalSlides-1, current+1);
+updateCarousel();
+};
+
+
+let totalSlides = 0;
+loadMessages().then(n => { totalSlides = n; updateCarousel(); });
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
