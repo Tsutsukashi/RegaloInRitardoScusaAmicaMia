@@ -22,9 +22,38 @@ body{display:grid;place-items:center;background:linear-gradient(180deg,#071032, 
   gap:1.2rem;
 }
 .nav{margin-top:1rem;display:flex;justify-content:center;align-items:center;gap:1rem}
-.nav-btn{cursor:pointer;background:rgba(255,255,255,0.06);border:none;padding:0.6rem 1rem;border-radius:8px;color:#e6eef8;font-size:1rem}
+.nav-btn{
+  cursor:pointer;
+  background:rgba(255,255,255,0.06);
+  border:none;
+  padding:0.6rem 1rem;
+  border-radius:8px;
+  color:#e6eef8;
+  font-size:1rem;
+}
 .nav-icon{font-size:1.4rem;opacity:0.8}
-#animArea{margin-top:2rem;min-height:80px;display:flex;justify-content:center;align-items:center;font-size:1.2rem;opacity:0;transition:opacity 0.8s ease}
+
+#goLastBtn{
+  margin-top:1rem;
+  cursor:pointer;
+  background:rgba(255,255,255,0.08);
+  border:1px solid #9ca3ff;
+  padding:0.6rem 1.2rem;
+  border-radius:10px;
+  color:#e6eef8;
+  font-size:0.9rem;
+}
+
+#animArea{
+  margin-top:2rem;
+  min-height:80px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  font-size:1.2rem;
+  opacity:0;
+  transition:opacity 0.8s ease;
+}
 .hint{margin-top:1rem;font-size:0.85rem;color:var(--accent)}
 footer{margin-top:1.5rem;font-size:0.85rem;opacity:0.7}
 </style>
@@ -46,9 +75,12 @@ footer{margin-top:1.5rem;font-size:0.85rem;opacity:0.7}
     <button class="nav-btn" id="nextBtn">▶</button>
   </div>
 
+  <!-- PULSANTE VAI ALL’ULTIMO -->
+  <button id="goLastBtn">⏭ Vai all'ultimo messaggio</button>
+
   <div id="animArea">👤✍️ Sto scrivendo…</div>
 
-  <div class="hint">AScorri tra i messaggi ✌️</div>
+  <div class="hint">Scorri tra i messaggi ✌️</div>
   <footer>Modifica o aggiungi file <code>message1.txt, message2.txt...</code> (e opzionalmente <code>author1.txt, author2.txt...</code>) su GitHub.</footer>
 </main>
 
@@ -67,16 +99,14 @@ async function loadMessages(){
       const text = (await res.text()).trim();
       const lm = res.headers.get('last-modified');
 
-      // prova a leggere l'autore da authorN.txt
+      // autore da authorN.txt
       let autore = null;
       try{
         const aRes = await fetch(`author${index}.txt`, {cache:'no-store'});
         if(aRes.ok){
           autore = (await aRes.text()).trim();
         }
-      }catch(e){
-        // se non c'è, lasciamo autore = null
-      }
+      }catch(e){}
 
       msgs.push({text, lm, autore});
       index++;
@@ -115,14 +145,12 @@ function updateInfoBar(){
   const m = allMsgs[current];
   if(!m){ bar.textContent = ''; return; }
 
-  // Data
   let dateStr = '';
   if(m.lm){
     const d = new Date(m.lm);
     if(!isNaN(d)) dateStr = d.toLocaleString();
   }
 
-  // Autore
   const autoreStr = m.autore && m.autore.length > 0 ? m.autore : '—';
 
   bar.innerHTML = `📅 ${dateStr} &nbsp;&nbsp;|&nbsp;&nbsp; 👤 ${autoreStr}`;
@@ -147,9 +175,18 @@ document.getElementById('nextBtn').onclick = () => {
   updateCarousel();
 };
 
+document.getElementById('goLastBtn').onclick = () => {
+  current = allMsgs.length - 1;
+  updateCarousel();
+};
+
 loadMessages().then(msgs => {
   allMsgs = msgs || [];
   if(allMsgs.length === 0) return;
+
+  // PARTI DALL'ULTIMO MESSAGGIO
+  current = allMsgs.length - 1;
+
   updateCarousel();
 });
 </script>
