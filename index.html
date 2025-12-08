@@ -69,11 +69,13 @@ footer{margin-top:1.5rem;font-size:0.85rem;opacity:0.7}
   <!-- data + autore -->
   <div id="infoBar"></div>
 
-  <div class="nav">
+<div class="nav">
+    <button class="nav-btn" id="goNewestBtn">⏮</button>
     <button class="nav-btn" id="prevBtn">◀</button>
     <div class="nav-icon">✦</div>
     <button class="nav-btn" id="nextBtn">▶</button>
-  </div>
+    <button class="nav-btn" id="goOldestBtn">⏭</button>
+</div>
 
   <!-- PULSANTE VAI ALL’ULTIMO -->
   <button id="goLastBtn">⏭ </button>
@@ -81,7 +83,7 @@ footer{margin-top:1.5rem;font-size:0.85rem;opacity:0.7}
   <div id="animArea">👤✍️ Sto scrivendo…</div>
 
   <div class="hint">Scorri tra i messaggi ✌️</div>
-  <footer>Modifica o aggiungi file <code>message1.txt, message2.txt...</code> (e opzionalmente <code>author1.txt, author2.txt...</code>) su GitHub.</footer>
+  <footer>Tutti i diritti sull'idea sono riservati alla Mario Luna S.p.A (Società per Astemi). Se volete inviare un bel messaggio anche voi a Natalia, inviate una mail con il contenuto e gli autori alla seguente email e verrà caricato quanto prima (cioè non appena Mario controlla la mail): MandaUnMessaggioANatalia@outlook.com </footer>
 </main>
 
 <script>
@@ -181,7 +183,17 @@ document.getElementById('goLastBtn').onclick = () => {
   current = 0;   // primo messaggio pubblicato (#1)
   updateCarousel();
 };
+// Vai al più recente (#N)
+document.getElementById('goNewestBtn').onclick = () => {
+  current = allMsgs.length - 1;
+  updateCarousel();
+};
 
+// Vai al più vecchio (#1)
+document.getElementById('goOldestBtn').onclick = () => {
+  current = 0;
+  updateCarousel();
+};
 loadMessages().then(msgs => {
   allMsgs = msgs || [];
   if(allMsgs.length === 0) return;
@@ -194,5 +206,6 @@ current = allMsgs.length - 1;
 </script>
 </body>
 </html>
+
 
 
