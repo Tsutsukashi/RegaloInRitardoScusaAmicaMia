@@ -132,7 +132,8 @@ function triggerAnimation(){
   const a = document.getElementById('animArea');
   a.style.opacity = 0;
   setTimeout(()=>{
-    a.textContent = '👤✍️ Messaggio #' + (current+1);
+    const numero = current + 1;
+    a.textContent = '👤✍️ Messaggio #' + numero;
     a.style.opacity = 1;
   },150);
 }
