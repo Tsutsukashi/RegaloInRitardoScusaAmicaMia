@@ -12,7 +12,15 @@ body{display:grid;place-items:center;background:linear-gradient(180deg,#071032, 
 #carousel{overflow:hidden;}
 .slide{min-width:100%;transition:transform 0.4s ease;font-size:clamp(20px,6vw,48px);line-height:1.1;margin-bottom:1rem}
 #slides{display:flex;}
-#dateFixed{font-size:0.9rem;opacity:0.8;margin:0.5rem 0 1rem}
+/* barra data + autore */
+#infoBar{
+  font-size:0.9rem;
+  opacity:0.85;
+  margin:0.5rem 0 1rem;
+  display:flex;
+  justify-content:center;
+  gap:1.2rem;
+}
 .nav{margin-top:1rem;display:flex;justify-content:center;align-items:center;gap:1rem}
 .nav-btn{cursor:pointer;background:rgba(255,255,255,0.06);border:none;padding:0.6rem 1rem;border-radius:8px;color:#e6eef8;font-size:1rem}
 .nav-icon{font-size:1.4rem;opacity:0.8}
@@ -24,111 +32,124 @@ footer{margin-top:1.5rem;font-size:0.85rem;opacity:0.7}
 <body>
 <div style="position:fixed; top:0; left:0; width:100%; height:100%; pointer-events:none; border:10px solid #9ca3ff; box-sizing:border-box; border-radius:20px; z-index:9999;"></div>
 
-
 <main class="card">
-<div id="carousel">
-<div id="slides"></div>
-</div>
-<div id="dateFixed"></div>
+  <div id="carousel">
+    <div id="slides"></div>
+  </div>
 
+  <!-- data + autore -->
+  <div id="infoBar"></div>
 
-<div class="nav">
-<button class="nav-btn" id="prevBtn">◀</button>
-<div class="nav-icon">✦</div>
-<button class="nav-btn" id="nextBtn">▶</button>
-</div>
+  <div class="nav">
+    <button class="nav-btn" id="prevBtn">◀</button>
+    <div class="nav-icon">✦</div>
+    <button class="nav-btn" id="nextBtn">▶</button>
+  </div>
 
+  <div id="animArea">👤✍️ Sto scrivendo…</div>
 
-<div id="animArea">👤✍️ Sto scrivendo…</div>
-
-
-<div class="hint">Scorri tra i messaggi ✌️</div>
-<footer>Modifica o aggiungi file <code>message1.txt, message2.txt...</code> su GitHub.</footer>
+  <div class="hint">AScorri tra i messaggi ✌️</div>
+  <footer>Modifica o aggiungi file <code>message1.txt, message2.txt...</code> (e opzionalmente <code>author1.txt, author2.txt...</code>) su GitHub.</footer>
 </main>
-
 
 <script>
 async function loadMessages(){
-const slides = document.getElementById('slides');
-const msgs = [];
-let index = 1;
-let found = true;
+  const slides = document.getElementById('slides');
+  const msgs = [];
+  let index = 1;
+  let found = true;
 
+  while(found){
+    try{
+      const res = await fetch(`message${index}.txt`, {cache:'no-store'});
+      if(!res.ok){ found = false; break; }
 
-while(found){
-try{
-const res = await fetch(`message${index}.txt`, {cache:'no-store'});
-if(!res.ok){found = false;break;}
-const text = (await res.text()).trim();
-const lm = res.headers.get('last-modified');
-msgs.push({text,lm});
-index++;
-}catch(e){found=false;}
+      const text = (await res.text()).trim();
+      const lm = res.headers.get('last-modified');
+
+      // prova a leggere l'autore da authorN.txt
+      let autore = null;
+      try{
+        const aRes = await fetch(`author${index}.txt`, {cache:'no-store'});
+        if(aRes.ok){
+          autore = (await aRes.text()).trim();
+        }
+      }catch(e){
+        // se non c'è, lasciamo autore = null
+      }
+
+      msgs.push({text, lm, autore});
+      index++;
+    }catch(e){
+      found = false;
+    }
+  }
+
+  if(msgs.length === 0){
+    slides.innerHTML = '<div class="slide">Nessun messaggio trovato</div>';
+    return [];
+  }
+
+  msgs.forEach(m => {
+    const div = document.createElement('div');
+    div.className = 'slide';
+    div.textContent = m.text;
+    slides.appendChild(div);
+  });
+
+  return msgs;
 }
 
-
-if(msgs.length===0){
-slides.innerHTML='<div class="slide">Nessun messaggio trovato</div>';
-return;
-}
-
-
-msgs.forEach(m=>{
-const div=document.createElement('div');
-div.className='slide';
-div.textContent=m.text;
-slides.appendChild(div);
-});
-
-
-return msgs;
-}
-
-
-let current=0;
-let allMsgs=[];
-
+let current = 0;
+let allMsgs = [];
 
 function updateCarousel(){
-const slides=document.getElementById('slides');
-slides.style.transform=`translateX(${-current*100}%)`;
-updateDate();
-triggerAnimation();
+  const slides = document.getElementById('slides');
+  slides.style.transform = `translateX(${-current*100}%)`;
+  updateInfoBar();
+  triggerAnimation();
 }
 
+function updateInfoBar(){
+  const bar = document.getElementById('infoBar');
+  const m = allMsgs[current];
+  if(!m){ bar.textContent = ''; return; }
 
-function updateDate(){
-const dateBox=document.getElementById('dateFixed');
-const m=allMsgs[current];
-if(!m||!m.lm){dateBox.textContent='';return;}
-const d=new Date(m.lm);
-if(!isNaN(d)) dateBox.textContent='Pubblicato: '+d.toLocaleString();
+  // Data
+  let dateStr = '';
+  if(m.lm){
+    const d = new Date(m.lm);
+    if(!isNaN(d)) dateStr = d.toLocaleString();
+  }
+
+  // Autore
+  const autoreStr = m.autore && m.autore.length > 0 ? m.autore : '—';
+
+  bar.innerHTML = `📅 ${dateStr} &nbsp;&nbsp;|&nbsp;&nbsp; 👤 ${autoreStr}`;
 }
-
 
 function triggerAnimation(){
-const a=document.getElementById('animArea');
-a.style.opacity=0;
-setTimeout(()=>{
-a.textContent='👤✍️ Messaggio #' + (current+1);
-a.style.opacity=1;
-},150);
+  const a = document.getElementById('animArea');
+  a.style.opacity = 0;
+  setTimeout(()=>{
+    a.textContent = '👤✍️ Messaggio #' + (current+1);
+    a.style.opacity = 1;
+  },150);
 }
 
-
-document.getElementById('prevBtn').onclick=()=>{
-current=Math.max(0,current-1);
-updateCarousel();
+document.getElementById('prevBtn').onclick = () => {
+  current = Math.max(0, current-1);
+  updateCarousel();
 };
-document.getElementById('nextBtn').onclick=()=>{
-current=Math.min(allMsgs.length-1,current+1);
-updateCarousel();
+document.getElementById('nextBtn').onclick = () => {
+  current = Math.min(allMsgs.length-1, current+1);
+  updateCarousel();
 };
 
-
-loadMessages().then(msgs=>{
-allMsgs=msgs||[];
-updateCarousel();
+loadMessages().then(msgs => {
+  allMsgs = msgs || [];
+  if(allMsgs.length === 0) return;
+  updateCarousel();
 });
 </script>
 </body>
