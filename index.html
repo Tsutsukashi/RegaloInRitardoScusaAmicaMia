@@ -76,7 +76,7 @@ footer{margin-top:1.5rem;font-size:0.85rem;opacity:0.7}
   </div>
 
   <!-- PULSANTE VAI ALL’ULTIMO -->
-  <button id="goLastBtn">⏭ Vai all'ultimo messaggio</button>
+  <button id="goLastBtn">⏭ </button>
 
   <div id="animArea">👤✍️ Sto scrivendo…</div>
 
@@ -167,11 +167,13 @@ function triggerAnimation(){
 }
 
 document.getElementById('prevBtn').onclick = () => {
-  current = Math.max(0, current-1);
+  current = Math.min(allMsgs.length - 1, current + 1);
   updateCarousel();
 };
+
+// ▶ deve andare verso i PIÙ VECCHI → quindi -1
 document.getElementById('nextBtn').onclick = () => {
-  current = Math.min(allMsgs.length-1, current+1);
+  current = Math.max(0, current - 1);
   updateCarousel();
 };
 
@@ -185,10 +187,11 @@ loadMessages().then(msgs => {
   if(allMsgs.length === 0) return;
 
   // PARTI DALL'ULTIMO MESSAGGIO
-  current = allMsgs.length - 1;
+  current = 0;
 
   updateCarousel();
 });
 </script>
 </body>
 </html>
+
