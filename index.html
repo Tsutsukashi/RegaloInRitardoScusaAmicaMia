@@ -178,7 +178,7 @@ document.getElementById('nextBtn').onclick = () => {
 };
 
 document.getElementById('goLastBtn').onclick = () => {
-  current = allMsgs.length - 1;
+  current = 0;   // primo messaggio pubblicato (#1)
   updateCarousel();
 };
 
@@ -187,11 +187,12 @@ loadMessages().then(msgs => {
   if(allMsgs.length === 0) return;
 
   // PARTI DALL'ULTIMO MESSAGGIO
-  current = 0;
+current = allMsgs.length - 1;
 
   updateCarousel();
 });
 </script>
 </body>
 </html>
+
 
